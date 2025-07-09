@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间点抢票系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--light);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .system-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .info-card {
+            background: rgba(44, 62, 80, 0.8);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 250px;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-card h3 {
+            color: var(--secondary);
+            margin-bottom: 8px;
+            font-size: 1.3rem;
+        }
+        
+        .ticket-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .ticket-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .ticket-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .time-slot {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ticket-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .ticket-status {
+            font-size: 0.9rem;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .available {
+            color: var(--secondary);
+        }
+        
+        .sold-out {
+            color: var(--danger);
+        }
+        
+        .ticket-holder {
+            background: rgba(44, 62, 80, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .ticket-holder p {
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .empty-slot {
+            color: var(--gray);
+            font-style: italic;
+        }
+        
+        .user-name {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .action-btn:hover {
+            background: #2980b9;
+            transform: scale(1.03);
+        }
+        
+        .action-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .user-panel {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .user-controls input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+        
+        .user-controls input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .user-controls button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            background: var(--secondary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .user-controls button:hover {
+            background: #27ae60;
+            transform: scale(1.05);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: rgba(44, 62, 80, 0.95);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.5s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .notification.error {
+            border-left: 5px solid var(--danger);
+        }
+        
+        .notification i {
+            font-size: 1.8rem;
+        }
+        
+        .countdown {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        
+        .countdown span {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .ticket-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .system-info {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-ticket-alt"></i> 时间点抢票系统</h1>
+            <p class="subtitle">每晚18:00发放第二天十个时间点的票，每个时间点仅有两张票，抢完即止。成功抢票的用户将在对应时间点显示名字。</p>
+            
+            <div class="countdown">
+                下一轮放票时间：<span id="countdown-timer">00:00:00</span>
+            </div>
+        </header>
+        
+        <div class="system-info">
+            <div class="info-card">
+                <h3><i class="fas fa-calendar-day"></i> 今日日期</h3>
+                <p id="current-date">2023年11月15日</p>
+            </div>
+            <div class="info-card">
+                <h3><i class="fas fa-ticket-alt"></i> 票务状态</h3>
+                <p>已抢: <span id="tickets-taken">0</span> / 剩余: <span id="tickets-available">20</span></p>
+            </div>
+            <div class="info-card">
+                <h3><i class="fas fa-user-clock"></i> 抢票规则</h3>
+                <p>每人限抢一个时间段的一张票</p>
+            </div>
+        </div>
+        
+        <div class="user-panel">
+            <div class="user-controls">
+                <input type="text" id="username" placeholder="输入您的姓名" maxlength="20">
+                <button id="login-btn"><i class="fas fa-sign-in-alt"></i> 登录/注册</button>
+            </div>
+            <div id="user-info" style="margin-top: 15px; display: none;">
+                <p>欢迎, <span id="current-user" style="color: var(--primary); font-weight: bold;"></span>！</p>
+            </div>
+        </div>
+        
+        <div class="ticket-grid" id="ticket-container">
+            <!-- 票务信息将通过JavaScript动态生成 -->
+        </div>
+        
+        <footer>
+            <p>抢票系统 &copy; 2023 | 每晚18:00准时放票 | 技术支持: ticket-system@example.com</p>
+        </footer>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <div class="notification-content">抢票成功！</div>
+    </div>
+    <script>
+        // 模拟数据 - 十个时间段
+        const timeSlots = [
+            { id: 1, start: "08:00", end: "08:45", tickets: [] },
+            { id: 2, start: "08:45", end: "09:30", tickets: [] },
+            { id: 3, start: "09:30", end: "10:15", tickets: [] },
+            { id: 4, start: "10:15", end: "11:00", tickets: [] },
+            { id: 5, start: "11:00", end: "11:45", tickets: [] },
+            { id: 6, start: "15:00", end: "15:45", tickets: [] },
+            { id: 7, start: "15:45", end: "16:30", tickets: [] },
+            { id: 8, start: "16:30", end: "17:15", tickets: [] },
+            { id: 9, start: "17:15", end: "18:00", tickets: [] },
+            { id: 10, start: "18:00", end: "18:45", tickets: [] }
+        ];
+        // 初始化票务数据
+        function initializeTickets() {
+            // 模拟一些已抢票的用户
+            timeSlots[0].tickets = ["张三"];
+            timeSlots[3].tickets = ["李四"];
+            timeSlots[5].tickets = ["王五"];
+            timeSlots[9].tickets = ["赵六"];
+            
+            // 随机添加一些票务数据
+            const names = ["陈明", "刘芳", "杨阳", "周杰", "吴婷", "郑浩", "王霞", "林峰"];
+            for (let i = 0; i < timeSlots.length; i++) {
+                if (timeSlots[i].tickets.length < 2 && Math.random() > 0.5) {
+                    const randomName = names[Math.floor(Math.random() * names.length)];
+                    timeSlots[i].tickets.push(randomName);
+                }
+            }
+        }
+        // 生成票务卡片
+        function generateTicketCards() {
+            const container = document.getElementById('ticket-container');
+            container.innerHTML = '';
+            
+            let takenCount = 0;
+            
+            timeSlots.forEach(slot => {
+                const ticketCard = document.createElement('div');
+                ticketCard.className = 'ticket-card';
+                
+                const status = slot.tickets.length < 2 ? 'available' : 'sold-out';
+                const availableCount = 2 - slot.tickets.length;
+                
+                ticketCard.innerHTML = `
+                    <div class="time-slot">${slot.start} - ${slot.end}</div>
+                    <div class="ticket-info">
+                        <div class="ticket-status ${status}">
+                            ${status === 'available' ? 
+                              `剩余 ${availableCount} 张票` : '已售罄'}
+                        </div>
+                        <div class="ticket-status">可容纳: 2人</div>
+                    </div>
+                    <div class="ticket-holders">
+                        <div class="ticket-holder">
+                            ${slot.tickets[0] ? 
+                              `<p><span class="user-name">${slot.tickets[0]}</span> 已预订</p>` : 
+                              '<p class="empty-slot">席位空缺</p>'}
+                        </div>
+                        <div class="ticket-holder">
+                            ${slot.tickets[1] ? 
+                              `<p><span class="user-name">${slot.tickets[1]}</span> 已预订</p>` : 
+                              '<p class="empty-slot">席位空缺</p>'}
+                        </div>
+                    </div>
+                    <button class="action-btn" data-slot="${slot.id}" 
+                            ${status === 'sold-out' || !currentUser ? 'disabled' : ''}>
+                        ${currentUser ? '立即抢票' : '请先登录'}
+                    </button>
+                `;
+                
+                container.appendChild(ticketCard);
+                takenCount += slot.tickets.length;
+            });
+            
+            // 更新票务统计
+            document.getElementById('tickets-taken').textContent = takenCount;
+            document.getElementById('tickets-available').textContent = 20 - takenCount;
+        }
+        // 显示通知
+        function showNotification(message, isSuccess = true) {
+            const notification = document.getElementById('notification');
+            const content = notification.querySelector('.notification-content');
+            const icon = notification.querySelector('i');
+            
+            content.textContent = message;
+            notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
+            icon.className = isSuccess ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        // 用户登录
+        let currentUser = null;
+        
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const username = document.getElementById('username').value.trim();
+            
+            if (username.length < 2) {
+                showNotification('请输入至少2个字符的用户名', false);
+                return;
+            }
+            
+            currentUser = username;
+            document.getElementById('current-user').textContent = currentUser;
+            document.getElementById('user-info').style.display = 'block';
+            showNotification(`欢迎, ${currentUser}！`);
+            
+            // 重新生成票务卡片（更新按钮状态）
+            generateTicketCards();
+        });
+        // 抢票功能
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('action-btn') && currentUser) {
+                const slotId = parseInt(e.target.dataset.slot);
+                const slot = timeSlots.find(s => s.id === slotId);
+                
+                // 检查是否已抢过票
+                const alreadyBooked = timeSlots.some(s => s.tickets.includes(currentUser));
+                if (alreadyBooked) {
+                    showNotification('您已经抢过票了，每人限抢一张', false);
+                    return;
+                }
+                
+                // 检查是否还有空位
+                if (slot.tickets.length >= 2) {
+                    showNotification('该时间段已无余票', false);
+                    return;
+                }
+                
+                // 抢票成功
+                slot.tickets.push(currentUser);
+                showNotification(`成功预订 ${slot.start}-${slot.end} 时间段！`);
+                
+                // 更新UI
+                generateTicketCards();
+            }
+        });
+        // 倒计时功能
+        function updateCountdown() {
+            const now = new Date();
+            const target = new Date();
+            
+            // 设置目标时间为今天的18:00
+            target.setHours(18, 0, 0, 0);
+            
+            // 如果现在已过18:00，则目标设为明天的18:00
+            if (now > target) {
+                target.setDate(target.getDate() + 1);
+            }
+            
+            const diff = target - now;
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown-timer').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        // 更新日期
+        function updateDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('zh-CN', options);
+        }
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTickets();
+            generateTicketCards();
+            updateDate();
+            updateCountdown();
+            
+            // 每秒更新倒计时
+            setInterval(updateCountdown, 1000);
+        });
+    </script>
+</body>
+</html>
